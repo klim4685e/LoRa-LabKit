@@ -37,13 +37,24 @@ C_INCLUDES =  \
 -Isrc/CMSIS/Include \
 -Isrc/CMSIS/Device/ST/STM32WLxx/Include \
 -Isrc/FreeRTOS/include \
--Isrc/FreeRTOS/portable
+-Isrc/FreeRTOS/portable \
+-Isrc/lwip/contrib/ports/freertos/include \
+-Isrc/lwip/src/include 
+
 ASM_INCLUDES = 
 C_SOURCE_DIRS = \
 src/CMSIS/Device/ST/STM32WLxx/Source/Templates \
 src/app \
 src/FreeRTOS/portable \
-src/FreeRTOS
+src/FreeRTOS \
+src/lwip/contrib/ports/freertos \
+src/lwip/src/core \
+src/lwip/src/core/ipv4 \
+src/lwip/src/core/ipv6 \
+src/lwip/src/netif \
+src/lwip/src/netif/ppp \
+src/lwip/src/api \
+src/lwip/src/netif/ppp/polarssl 
 ASM_SOURCE_DIRS = \
 src/startup 
 
