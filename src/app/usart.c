@@ -273,6 +273,9 @@ uint16_t printf2(const char *format, ...)
 				switch(*++format)
 				{
 				case 'd':
+				case 'h':
+				case 'i':
+				case 'u':
 				{
 					int val = va_arg(args,int);
 					char temp[11];
@@ -300,17 +303,6 @@ uint16_t printf2(const char *format, ...)
 						strcat(printf_buffer,val);
 					break;
 				}
-				case 'X':
-				{
-					int val = va_arg(args,int);
-					char temp[3];
-					len += 3;
-					sprintf(temp,"%02X",val);
-					if(len < MAX_MSG_SIZE)
-						strcat(printf_buffer,temp);
-					break;
-				}
-
 				default:
 					len++;
 					if(len < MAX_MSG_SIZE)

@@ -9,10 +9,14 @@
 #include "usart.h"
 #include "lwip/tcpip.h"
 
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/api.h"
 
+#include "main.h"
 extern QueueHandle_t USART2_Queue;
 void vMainTask(void* ctx);
-void vMainTask1(void* ctx);
+
 
 
 
@@ -41,7 +45,7 @@ int main(void)
 void vMainTask(void* ctx)
 {
 	pppos_init();
-
+	sys_thread_new("sockex_testrecv", vMainTask1, NULL, configMINIMAL_STACK_SIZE*4, 0);
 	while(1)
 	{
 		GPIOB->BSRR = GPIO_BSRR_BR4;
@@ -50,24 +54,38 @@ void vMainTask(void* ctx)
 		vTaskDelay(500);
 	}
 }
+
 void vMainTask1(void* ctx)
 {
-	USART_Init(2,115200);
-	USART_Init(1,115200);
-	uint8_t control[200];
-	uint8_t bebra[] = "bebraBibra\r\n";
-			GPIOB->BSRR = GPIO_BSRR_BR4;
-	while(1)
-	{
-		if(USART_Receive(2,control,200) != 0)
-			__asm("nop");
-		GPIOB->BSRR = GPIO_BSRR_BR4;
-		vTaskDelay(250);
-		USART_Transmit(2,bebra,sizeof(bebra));
-		USART_Transmit(2,bebra,sizeof(bebra));
-		USART_Transmit(1,bebra,sizeof(bebra));
-		USART_Transmit(1,bebra,sizeof(bebra));
-		GPIOB->BSRR = GPIO_BSRR_BS4;
-		vTaskDelay(2000);
-	}
+	struct netconn *conn;
+	ip6_addr_t* addr;
+	struct netbuf *buf;
+	unsigned short port;
+	err_t err, recv_err;
+	  conn = netconn_new(NETCONN_UDP_IPV6);
+	  err = netconn_bind(conn, IP6_ADDR_ANY, 7);
+	  if(err == ERR_OK)
+	  {
+
+	  }
+	  else
+	  {
+		  netconn_delete(conn);
+	  }
+	  while(1)
+	  {
+
+		  recv_err = netconn_recv(conn,&buf);
+		  if(recv_err == ERR_OK)
+		  {
+			  addr = netbuf_fromaddr(buf);
+			  port = netbuf_fromport(buf);
+			  netconn_connect(conn, addr, port);
+			  netbuf_ref(buf, "test_respond\r\n", sizeof("test_respond\r\n"));
+			  netconn_send(conn,buf);
+			  netconn_disconnect(conn);
+			  netbuf_delete(buf);
+		  }
+	  vTaskDelay(1000);
+	  }
 }

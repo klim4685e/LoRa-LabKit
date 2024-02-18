@@ -9,7 +9,7 @@
 #include "usart.h"
 #include "netif/ppp/pppos.h"
 #include "netif/ppp/ppp.h"
-
+#include "main.h"
 
 static void status_cb(ppp_pcb *pcb, int err_code, void *ctx);
 static u32_t output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx);
@@ -104,6 +104,7 @@ static void status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
 #endif /* PPP_IPV4_SUPPORT */
 #if PPP_IPV6_SUPPORT
       printf2("   our6_ipaddr = %s\n", ip6addr_ntoa(netif_ip6_addr(pppif, 0)));
+
 #endif /* PPP_IPV6_SUPPORT */
       break;
     }
