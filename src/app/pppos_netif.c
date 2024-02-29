@@ -19,14 +19,15 @@ ppp_pcb *ppp;
 /* The PPP IP interface */
 struct netif ppp_netif;
 
-uint8_t rxbuffer[1024];
+uint8_t rxbuffer[250];
 void pppos_rx_thread(void* ctx)
 {
 	uint16_t len;
+	usart_t* dev = USART_GetDev(USART2);
 	while(1)
 	{
-		len = USART_Receive(2,rxbuffer,1024);
-		if(len != 0)
+		len = USART_Receive(dev,rxbuffer,250);
+		if(len > 0)
 		{
 			pppos_input_tcpip(ppp, rxbuffer, len);
 		}
@@ -68,13 +69,32 @@ void pppos_thread(void* ctx)
 }
 static u32_t output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
 {
-  return USART_Transmit(2, data, len);
+	usart_t* dev = USART_GetDev(USART2);
+  return USART_Transmit(dev, data, len);
 }
 
 void pppos_init(void)
 {
-	USART_Init(1,115200);
-	USART_Init(2,115200);
+	usart_config_t config =
+	{
+	  USART1,
+	  GPIOB,
+	  7,
+	  6,
+	  DMA1,
+	  0,
+	  0,
+	  0,
+	  0,
+	  115200,
+	};
+	usart_t* dev = USART_Init(&config);
+	USART_Transmit(dev,"bebra\r\n",sizeof("bebra\r\n"));
+	config.base = USART2;
+	config.gpio = GPIOA;
+	config.rx_pin = 2;
+	config.tx_pin = 3;
+	USART_Init(&config);
 	tcpip_init(NULL,NULL);
 	xTaskCreate(pppos_rx_thread,"pppos_rx_thread",configMINIMAL_STACK_SIZE*2,(void*)NULL,1,(void*)NULL);
 	xTaskCreate(pppos_thread,"pppos_thread",configMINIMAL_STACK_SIZE*4,(void*)NULL,1,(void*)NULL);

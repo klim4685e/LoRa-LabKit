@@ -39,7 +39,8 @@ C_INCLUDES =  \
 -Isrc/FreeRTOS/include \
 -Isrc/FreeRTOS/portable \
 -Isrc/lwip/contrib/ports/freertos/include \
--Isrc/lwip/src/include 
+-Isrc/lwip/src/include \
+-Isrc/sx126x_driver/src
 
 ASM_INCLUDES = 
 C_SOURCE_DIRS = \
@@ -54,7 +55,9 @@ src/lwip/src/core/ipv6 \
 src/lwip/src/netif \
 src/lwip/src/netif/ppp \
 src/lwip/src/api \
-src/lwip/src/netif/ppp/polarssl 
+src/lwip/src/netif/ppp/polarssl \
+src/sx126x_driver/src	\
+src/sx126x_driver
 ASM_SOURCE_DIRS = \
 src/startup 
 
