@@ -67,5 +67,5 @@ usart_t* USART_Init(usart_config_t* config);
 uint16_t USART_Receive(usart_t* dev, uint8_t* data, uint16_t max_len);
 uint16_t USART_Transmit(usart_t* dev, uint8_t* data, uint16_t len);
 usart_t* USART_GetDev(USART_TypeDef* USARTx);
-uint16_t printf2(const char *format, ...);
+int printf2(const char *format, ...);
 #endif /* SRC_INCLUDE_USART_H_ */

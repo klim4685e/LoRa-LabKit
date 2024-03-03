@@ -161,13 +161,13 @@ usart_t* USART_Init(usart_config_t* config)
 #ifdef	PERIPH_USART1
 	if(res->base == USART1)
 	{
-		xTaskCreate(USART1_Task,"USART1_Task",configMINIMAL_STACK_SIZE,(void*)NULL,3,(void*)NULL);
+		xTaskCreate(USART1_Task,"USART1_Task",configMINIMAL_STACK_SIZE,(void*)NULL,configMAX_PRIORITIES-2,(void*)NULL);
 	}
 #endif
 #ifdef	PERIPH_USART2
 	else if(res->base == USART2)
 	{
-		xTaskCreate(USART2_Task,"USART2_Task",configMINIMAL_STACK_SIZE,(void*)NULL,4,(void*)NULL);
+		xTaskCreate(USART2_Task,"USART2_Task",configMINIMAL_STACK_SIZE,(void*)NULL,configMAX_PRIORITIES-2,(void*)NULL);
 	}
 #endif
 	return res;
@@ -279,74 +279,27 @@ void USART_Main(usart_t* dev)
 }
 #define MAX_MSG_SIZE 256
 char printf_buffer[MAX_MSG_SIZE];
-uint16_t printf2(const char *format, ...)
+int printf2(const char *format, ...)
 {
 
-	uint16_t len = 0;
-	va_list args;
+   // Variable Argument List
+   va_list arg;
 
+   int done;
 
-		va_start(args,format);
-		while((*format != '\0') && (len < MAX_MSG_SIZE))
-		{
-			if(*format != '%')
-			{
-				len++;
-				if(len < MAX_MSG_SIZE)
-					strncat(printf_buffer,format,1);
-				format++;
-			}
-			else
-			{
-				switch(*++format)
-				{
-				case 'd':
-				case 'h':
-				case 'i':
-				case 'u':
-				{
-					int val = va_arg(args,int);
-					char temp[11];
-					itoa(val,temp,10);
-					uint8_t temp_len = strlen(temp);
-					len += temp_len;
-					if(len < MAX_MSG_SIZE)
-						strcat(printf_buffer,temp);
-					break;
-				}
-				case 'c':
-				{
-					char val = va_arg(args,int);
-					len++;
-					if(len < MAX_MSG_SIZE)
-						strncat(printf_buffer,&val,1);
-					break;
-				}
-				case 's':
-				{
-					char* val = va_arg(args,char*);
-					uint8_t temp_len = strlen(val);
-					len += temp_len;
-					if(len < MAX_MSG_SIZE)
-						strcat(printf_buffer,val);
-					break;
-				}
-				default:
-					len++;
-					if(len < MAX_MSG_SIZE)
-						strncat(printf_buffer,&format,1);
-					break;
-				}
-				format++;
-			}
+   // Get Variable Arguments
+   va_start (arg, format);
 
-		}
+   // Pass format string and arguments to string formatter
+   done = vsnprintf(printf_buffer, MAX_MSG_SIZE, format, arg);
+   usart_t* dev = USART_GetDev(USART1);
+   // Start Transmission
+   USART_Transmit(dev,printf_buffer,done);
 
-		va_end(args);
-		USART_Transmit(&usart1,printf_buffer,len);
+   // End Variable Arguments
+   va_end (arg);
 
-		return len;
-
+   return done;
 }
 usart_t* USART_GetDev(USART_TypeDef* USARTx)
 {

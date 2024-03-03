@@ -35,7 +35,7 @@ int main(void)
 
 	while(1)
 	{
-		xTaskCreate(vMainTask,"biba_boba",configMINIMAL_STACK_SIZE,(void*)NULL,0,(void*)NULL);
+		xTaskCreate(vMainTask,"biba_boba",configMINIMAL_STACK_SIZE,(void*)NULL,TCPIP_THREAD_PRIO-2,(void*)NULL);
 		vTaskStartScheduler();
 		while(1)
 		{};
@@ -45,33 +45,14 @@ int main(void)
 }
 void vMainTask(void* ctx)
 {
-	pppos_init();
-
-	sys_thread_new("sockex_testrecv", vMainTask1, NULL, configMINIMAL_STACK_SIZE*4, 1);
-//	usart_config_t config =
-//	{
-//	  USART1,
-//	  GPIOB,
-//	  7,
-//	  6,
-//	  DMA1,
-//	  DMA1_Channel1,
-//	  DMA1_Channel3,
-//	  DMA1_Channel1_IRQn,
-//	  DMA1_Channel3_IRQn,
-//	  115200,
-//	};
-//	usart_t* dev = USART_Init(&config);
-//	uint8_t bebe[20];
-//	uint16_t len = 0;
-
+	tcpip_init(pppos_init,NULL);
+	vTaskDelay(500);
+	sys_thread_new("sockex_testrecv", vMainTask1, NULL, configMINIMAL_STACK_SIZE*4, TCPIP_THREAD_PRIO);
 	while(1)
 	{
-//		len = USART_Receive(dev,bebe,20);
 		GPIOB->BSRR = GPIO_BSRR_BR4;
-//		if((len > 0) &&(len < 20))
-//			USART_Transmit(dev,bebe,len);
 		vTaskDelay(500);
+
 		GPIOB->BSRR = GPIO_BSRR_BS4;
 		vTaskDelay(500);
 	}

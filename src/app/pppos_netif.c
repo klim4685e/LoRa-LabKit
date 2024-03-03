@@ -31,7 +31,7 @@ void pppos_rx_thread(void* ctx)
 		{
 			pppos_input_tcpip(ppp, rxbuffer, len);
 		}
-		vTaskDelay(1);
+		vTaskDelay(5);
 	}
 }
 static void ctx_cb(void){
@@ -43,6 +43,7 @@ void pppos_thread(void* ctx)
 	       output_cb, status_cb, ctx_cb);
 
 	ppp_set_default(ppp);
+
 //	ip4_addr_t addr;
 //
 //	/* Set our address */
@@ -64,7 +65,7 @@ void pppos_thread(void* ctx)
 	while(1)
 	{
 
-		vTaskDelay(20000);
+		vTaskDelay(1000);
 	}
 }
 static u32_t output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
@@ -95,9 +96,9 @@ void pppos_init(void)
 	config.rx_pin = 2;
 	config.tx_pin = 3;
 	USART_Init(&config);
-	tcpip_init(NULL,NULL);
-	xTaskCreate(pppos_rx_thread,"pppos_rx_thread",configMINIMAL_STACK_SIZE*2,(void*)NULL,1,(void*)NULL);
-	xTaskCreate(pppos_thread,"pppos_thread",configMINIMAL_STACK_SIZE*4,(void*)NULL,1,(void*)NULL);
+
+	xTaskCreate(pppos_rx_thread,"pppos_rx_thread",configMINIMAL_STACK_SIZE*2,(void*)NULL,configMAX_PRIORITIES - 3,(void*)NULL);
+	xTaskCreate(pppos_thread,"pppos_thread",configMINIMAL_STACK_SIZE,(void*)NULL,configMAX_PRIORITIES - 3,(void*)NULL);
 
 }
 
@@ -194,14 +195,14 @@ static void status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
 
   /* ppp_close() was previously called, don't reconnect */
   if (err_code == PPPERR_USER) {
-    /* ppp_free(); -- can be called here */
+     ppp_free(pcb);
     return;
   }
 
   /*
-   * Try to reconnect in 30 seconds, if you need a modem chatscript you have
+   * Try to reconnect in 3 seconds, if you need a modem chatscript you have
    * to do a much better signaling here ;-)
    */
-  ppp_connect(pcb, 30);
+  ppp_connect(pcb, 3);
   /* OR ppp_listen(pcb); */
 }
