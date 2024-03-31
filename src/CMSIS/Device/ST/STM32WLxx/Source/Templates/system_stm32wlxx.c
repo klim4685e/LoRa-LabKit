@@ -215,6 +215,25 @@ void SystemInit(void)
   SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET;
 #endif
 
+  RCC->CR |= RCC_CR_HSEON;
+  while((RCC->CR & RCC_CR_HSERDY) != RCC_CR_HSERDY) {}
+
+  RCC->CR &= ~RCC_CR_PLLON;
+  while((RCC->CR & RCC_CR_PLLRDY) == RCC_CR_PLLRDY) {}
+
+  RCC->PLLCFGR &= ~(RCC_PLLCFGR_PLLN_Msk | RCC_PLLCFGR_PLLR_Msk | RCC_PLLCFGR_PLLM_Msk);
+  RCC->PLLCFGR |= ((1 << RCC_PLLCFGR_PLLM_Pos) | (0x0C << RCC_PLLCFGR_PLLN_Pos) | (3 << RCC_PLLCFGR_PLLR_Pos) | (1 << RCC_PLLCFGR_PLLQ_Pos));
+  RCC->PLLCFGR |= (3 << RCC_PLLCFGR_PLLSRC_Pos);
+  RCC->CR |= RCC_CR_PLLON;
+  while((RCC->CR & RCC_CR_PLLRDY) == RCC_CR_PLLRDY){}
+  RCC->PLLCFGR |= RCC_PLLCFGR_PLLREN;
+  while((RCC->CR & RCC_CR_PLLRDY) == RCC_CR_PLLRDY){}
+
+  FLASH->ACR |= FLASH_ACR_LATENCY_1;
+  while((FLASH->ACR & FLASH_ACR_LATENCY) != 2){}
+
+  RCC->CFGR |= RCC_CFGR_SW;
+  while((RCC->CFGR & RCC_CFGR_SWS) == 0){}
   /* FPU settings ------------------------------------------------------------*/
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
   SCB->CPACR |= ((3UL << (10UL*2UL))|(3UL << (11UL*2UL)));  /* set CP10 and CP11 Full Access */

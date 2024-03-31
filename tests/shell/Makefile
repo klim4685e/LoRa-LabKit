@@ -1,6 +1,6 @@
-.PHONY: all clean echos
-
-TARGET = STM32WLE5_template
+.PHONY: all clean
+ROOT = ../..
+TARGET = shell
 ######################################
 # building variables
 ######################################
@@ -33,19 +33,23 @@ BUILD_DIR = build
 
 #C_INCLUDES
 C_INCLUDES =  \
--Isrc/include \
--Isrc/CMSIS/Include \
--Isrc/CMSIS/Device/ST/STM32WLxx/Include \
--Isrc/FreeRTOS/include \
--Isrc/FreeRTOS/portable
+-I$(ROOT)/src/include \
+-I$(ROOT)/src/CMSIS/Include \
+-I$(ROOT)/src/CMSIS/Device/ST/STM32WLxx/Include \
+-I$(ROOT)/src/FreeRTOS/include \
+-I$(ROOT)/src/FreeRTOS/portable \
+-I$(ROOT)/src/usart \
+-I$(ROOT)/src/console/include
 ASM_INCLUDES = 
 C_SOURCE_DIRS = \
-src/CMSIS/Device/ST/STM32WLxx/Source/Templates \
-src/app \
-src/FreeRTOS/portable \
-src/FreeRTOS
+$(ROOT)/src/CMSIS/Device/ST/STM32WLxx/Source/Templates \
+$(ROOT)/src/FreeRTOS/portable \
+$(ROOT)/src/FreeRTOS\
+$(ROOT)/src/usart \
+$(ROOT)/src/console/src \
+$(CURDIR)
 ASM_SOURCE_DIRS = \
-src/startup 
+$(ROOT)/src/startup 
 
 PREFIX = arm-none-eabi-
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
@@ -81,22 +85,22 @@ endif
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = $(wildcard src/ld/*.ld)
+LDSCRIPT = $(wildcard $(ROOT)/src/ld/*.ld)
 
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
 LDFLAGS = $(MCU) -T $(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,--gc-sections -specs=nosys.specs -specs=nano.specs
 
-C_SOURCES := $(foreach dir,$(C_SOURCE_DIRS),$(wildcard $(dir)/*.c))
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(C_SOURCES:.c=.o))
-ASM_SOURCES := $(foreach dir,$(ASM_SOURCE_DIRS),$(wildcard $(dir)/*.s))
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(ASM_SOURCES:.s=.o))
+ASM_SOURCES = $(foreach dir,$(ASM_SOURCE_DIRS),$(wildcard $(dir)/*.s))
+OBJECTS = $(addprefix $(BUILD_DIR)/,$(subst ../,,$(ASM_SOURCES:.s=.o)))
+C_SOURCES = $(foreach dir,$(C_SOURCE_DIRS),$(wildcard $(dir)/*.c))
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(subst ../,,$(filter-out $(CURDIR)%,$(C_SOURCES:.c=.o))))
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(filter $(CURDIR)%, $(C_SOURCES:.c=.o))))
+BEBRA = 
 
-
-
-OBJECT_DIRS = $(addprefix $(BUILD_DIR)/,$(C_SOURCE_DIRS))
-OBJECT_DIRS += $(addprefix $(BUILD_DIR)/,$(ASM_SOURCE_DIRS))
+OBJECT_DIRS = $(addprefix $(BUILD_DIR)/,$(filter-out $(CURDIR)%,$(subst ../,,$(C_SOURCE_DIRS))))
+OBJECT_DIRS += $(addprefix $(BUILD_DIR)/,$(subst ../,, $(ASM_SOURCE_DIRS)))
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
@@ -106,10 +110,12 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECT_DIRS) $(OBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJECTS)
 	
 	
-$(BUILD_DIR)/%.o: %.s 
+$(BUILD_DIR)/%.o: $(ROOT)/%.s 
 	$(AS) -c $(ASFLAGS) $< -o $@
 	
-$(BUILD_DIR)/%.o: %.c 
+$(BUILD_DIR)/%.o: %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+$(BUILD_DIR)/%.o: $(ROOT)/%.c 
 	$(CC) -c $(CFLAGS) $< -o $@
 	
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf 
@@ -119,12 +125,11 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf
 	$(BIN) $< $@
 
 $(OBJECT_DIRS): 
-	mkdir "$@"
+	mkdir --parents "$@"
 	
 clean:
-	rd /s/q $(BUILD_DIR)
-	
+	rm -r $(BUILD_DIR)
+
 echos:
-	echo $(OBJECTS)
-	echo $(ASM_SOURCES)
-	echo $(OBJECT_DIRS)
+	echo $(C_SOURCES)
+	

@@ -1,4 +1,4 @@
-#include "stm32wle5xx.h"
+#include "stm32wlxx.h"
 
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
@@ -7,6 +7,7 @@ void vMainTask(void* ctx);
 void vMainTask1(void* ctx);
 __attribute((noreturn)) int main(void)
 {
+	SystemCoreClockUpdate();
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	GPIOB->MODER &= ~(GPIO_MODER_MODE5 | GPIO_MODER_MODE4);
 	GPIOB->MODER |= GPIO_MODER_MODE5_0 | GPIO_MODER_MODE4_0;
