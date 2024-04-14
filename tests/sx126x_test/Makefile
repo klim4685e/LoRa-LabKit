@@ -1,6 +1,6 @@
 .PHONY: all clean
 ROOT = ../..
-TARGET = shell
+TARGET = sx126x_test
 ######################################
 # building variables
 ######################################
@@ -39,7 +39,9 @@ C_INCLUDES =  \
 -I$(ROOT)/src/FreeRTOS/include \
 -I$(ROOT)/src/FreeRTOS/portable \
 -I$(ROOT)/src/usart \
--I$(ROOT)/src/console/include
+-I$(ROOT)/src/sx126x_driver \
+-I$(ROOT)/src/console/include \
+-I$(CURDIR)
 ASM_INCLUDES = 
 C_SOURCE_DIRS = \
 $(ROOT)/src/CMSIS/Device/ST/STM32WLxx/Source/Templates \
@@ -47,6 +49,7 @@ $(ROOT)/src/FreeRTOS/portable \
 $(ROOT)/src/FreeRTOS\
 $(ROOT)/src/usart \
 $(ROOT)/src/console/src \
+$(ROOT)/src/sx126x_driver \
 $(CURDIR)
 ASM_SOURCE_DIRS = \
 $(ROOT)/src/startup 
@@ -96,8 +99,7 @@ ASM_SOURCES = $(foreach dir,$(ASM_SOURCE_DIRS),$(wildcard $(dir)/*.s))
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(subst ../,,$(ASM_SOURCES:.s=.o)))
 C_SOURCES = $(foreach dir,$(C_SOURCE_DIRS),$(wildcard $(dir)/*.c))
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(subst ../,,$(filter-out $(CURDIR)%,$(C_SOURCES:.c=.o))))
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(filter $(CURDIR)%, $(C_SOURCES:.c=.o))))
-BEBRA = 
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(filter $(CURDIR)%, $(C_SOURCES:.c=.o)))) 
 
 OBJECT_DIRS = $(addprefix $(BUILD_DIR)/,$(filter-out $(CURDIR)%,$(subst ../,,$(C_SOURCE_DIRS))))
 OBJECT_DIRS += $(addprefix $(BUILD_DIR)/,$(subst ../,, $(ASM_SOURCE_DIRS)))

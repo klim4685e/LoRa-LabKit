@@ -274,6 +274,8 @@ void USART_Main(usart_t* dev)
 				xSemaphoreGive(dev->semaphore);
 			}
 			break;
+		default:
+			break;
 		}
 	}
 	}
@@ -292,7 +294,7 @@ int _printf(const char *format, ...)
 
    // Pass format string and arguments to string formatter
    done = vsnprintf(print_buffer, MAX_MSG_SIZE, format, arg);
-   usart_t* dev = USART_GetDev(USART1);
+   usart_t* dev = USART_GetDev(USART2);
    // Start Transmission
    USART_Transmit(dev,print_buffer,done);
 

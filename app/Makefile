@@ -122,10 +122,18 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf
 	$(BIN) $< $@
 
 $(OBJECT_DIRS): 
+	ifeq($(OS),Windows_NT)
+	mkdir "$@"
+	else
 	mkdir --parents "$@"
-	
+	endif
+
 clean:
+	ifeq($(OS),Windows_NT)
+	rq /s/q $(BUILD_DIR)
+	else
 	rm -r $(BUILD_DIR)
+	endif
 
 echos:
 	echo $(OBJECTS)
