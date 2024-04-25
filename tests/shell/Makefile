@@ -125,15 +125,15 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf
 	$(BIN) $< $@
 
 $(OBJECT_DIRS): 
-ifeq ($(OS),Windows_NT)
+ifeq ($(OS), Windows_NT) 
 	mkdir "$@"
-else
+else 
 	mkdir --parents "$@"
-endif
+endif 
 
 clean:
-ifeq ($(OS),Windows_NT)
-	rq /s/q $(BUILD_DIR)
+ifeq ($(OS), Windows_NT)
+	rd /s/q $(BUILD_DIR)
 else
 	rm -r $(BUILD_DIR)
 endif
