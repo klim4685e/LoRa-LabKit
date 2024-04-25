@@ -17,8 +17,8 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
   ROM    (rx)    : ORIGIN = 0x08000000, LENGTH = 256K
-  RAM1   (xrw)   : ORIGIN = 0x20000000, LENGTH = 32K    /* Non-backup SRAM1 */
-  RAM2   (xrw)   : ORIGIN = 0x20008000, LENGTH = 32K    /* Backup SRAM2 */
+  RAM1   (xrw)   : ORIGIN = 0x20000000, LENGTH = 64K    /* Non-backup SRAM1 */
+/*  RAM2   (xrw)   : ORIGIN = 0x20008000, LENGTH = 32K    */
 }
 
 /* Sections */
@@ -144,16 +144,6 @@ SECTIONS
     _eRAM1_region = .;         /* define a global symbol at section end */
   } >RAM1
 
-  /* Data section into "SRAM2" Ram type memory: Backup SRAM2 dedicated to CM4 */
-  . = ALIGN(8);
-  RAM2_region :
-  {
-    _sRAM2_region = .;         /* define a global symbol at section start */
-    *(.RAM2_region)
-
-    . = ALIGN(8);
-    _eRAM2_region = .;         /* define a global symbol at section end */
-  } >RAM2
 
   /* User_heap_stack section, used to check that there is enough "SRAM1" Ram  type memory left */
   ._user_heap_stack :

@@ -294,7 +294,7 @@ int _printf(const char *format, ...)
 
    // Pass format string and arguments to string formatter
    done = vsnprintf(print_buffer, MAX_MSG_SIZE, format, arg);
-   usart_t* dev = USART_GetDev(USART2);
+   usart_t* dev = USART_GetDev(USART1);
    // Start Transmission
    USART_Transmit(dev,print_buffer,done);
 
