@@ -13,10 +13,18 @@
 #include "usart.h"
 
 sx126x_hal_status_t sx126x_hal_init(const void* context);
+void sx126x_rf_switch_init(sx126x_t* dev);
+void sx126x_rf_switch_set(sx126x_t* dev, sx126x_rf_mode_t rf_mode);
 
 sx126x_t SX126X_DEV;
-const sx126x_t* sx126x_dev = &SX126X_DEV;
+sx126x_t* sx126x_dev = &SX126X_DEV;
 
+sx126x_params_t spi_params =
+{
+	.spi = SUBGHZSPI,
+	.regulator = SX126X_REG_MODE_DCDC,
+	.set_rf_mode = sx126x_rf_switch_set,
+};
 void subghzspi_debug_setup(void)
 {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
@@ -24,6 +32,7 @@ void subghzspi_debug_setup(void)
 
 	GPIOA->AFR[0] |= ((13 << GPIO_AFRL_AFSEL4_Pos) | (13 << GPIO_AFRL_AFSEL5_Pos) | (13 << GPIO_AFRL_AFSEL6_Pos) | (13 << GPIO_AFRL_AFSEL7_Pos));
 	sx126x_hal_init(sx126x_dev);
+
 }
 void subghzspi_init(void)
 {
@@ -36,9 +45,11 @@ void subghzspi_init(void)
 sx126x_hal_status_t sx126x_hal_init(const void* context)
 {
 	sx126x_t* dev = (sx126x_t*)context;
+	dev->params = &spi_params;
 	subghzspi_init();
 	sx126x_hal_wakeup(dev);
 	sx126x_hal_reset(dev);
+	sx126x_rf_switch_init(sx126x_dev);
 }
 static uint8_t sx126x_radio_wait_until_ready(sx126x_t *dev)
 {
@@ -156,5 +167,33 @@ sx126x_hal_status_t sx126x_hal_wakeup( const void* context )
     return SX126X_STATUS_OK;
 }
 
+void sx126x_rf_switch_init(sx126x_t* dev)
+{
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
 
+	GPIOB->MODER &= ~GPIO_MODER_MODE8_1;
+	GPIOC->MODER &= ~GPIO_MODER_MODE13_1;
+}
+void sx126x_rf_switch_set(sx126x_t* dev, sx126x_rf_mode_t rf_mode)
+{
+	switch (rf_mode)
+	{
+	case SX126X_RF_MODE_RX:
+	{
+		GPIOB->BSRR = GPIO_BSRR_BS8;
+		GPIOC->BSRR = GPIO_BSRR_BR13;
+		break;
+	}
+	case SX126X_RF_MODE_TX_HPA:
+	case SX126X_RF_MODE_TX_LPA:
+	{
+		GPIOB->BSRR = GPIO_BSRR_BR8;
+		GPIOC->BSRR = GPIO_BSRR_BS13;
+		break;
+	}
+	default:
+		break;
+	}
+}
 

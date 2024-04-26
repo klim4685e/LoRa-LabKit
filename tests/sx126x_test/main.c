@@ -10,23 +10,32 @@
 #include "sx126x_driver.h"
 
 extern void subghzspi_debug_setup(void);
-extern const sx126x_t* sx126x_dev;
+extern sx126x_t* sx126x_dev;
+
+const sx126x_pa_cfg_params_t hpa_cfg = {
+    .pa_duty_cycle = 0x02,
+    .hp_max = 0x02,
+    .device_sel = 0x00,
+    .pa_lut = 0x01
+};
+
 CONSOLE_COMMAND_DEF(subghz_init, "subghz_init");
 static void subghz_init_command_handler(const subghz_init_args_t* args)
 {
     _printf("SUBGHZ_INIT\n");
     subghzspi_debug_setup();
+    sx126x_set_standby(sx126x_dev, SX126X_STANDBY_CFG_RC);
+    sx126x_set_pkt_type(sx126x_dev, SX126X_PKT_TYPE_LORA);
     sx126x_set_buffer_base_address(sx126x_dev,0x00,0x80);
     sx126x_set_rf_freq(sx126x_dev, 868100000);
-    sx126x_set_tx_params(sx126x_dev,0,SX126X_RAMP_10_US);
-    sx126x_mod_params_lora_t params =
-    {
-    		SX126X_LORA_SF7,
-			SX126X_LORA_BW_125,
-			SX126X_LORA_CR_4_5,
-			1
-    };
-    sx126x_set_lora_mod_params(sx126x_dev,&params);
+    sx126x_set_pa_cfg(sx126x_dev,&hpa_cfg);
+    sx126x_set_tx_params(sx126x_dev,5,SX126X_RAMP_10_US);
+    sx126x_dev->mod_params.bw = SX126X_LORA_BW_125;
+    sx126x_dev->mod_params.cr = SX126X_LORA_CR_4_5;
+    sx126x_dev->mod_params.sf = SX126X_LORA_SF7;
+    sx126x_dev->mod_params.ldro = 0;
+
+    sx126x_set_lora_mod_params(sx126x_dev,&sx126x_dev->mod_params);
 }
 CONSOLE_COMMAND_DEF(subghz_random, "subghz_random");
 static void subghz_random_command_handler(const subghz_random_args_t* args)
@@ -36,10 +45,19 @@ static void subghz_random_command_handler(const subghz_random_args_t* args)
     sx126x_get_random_numbers(sx126x_dev,&random,1);
     _printf("%d ",random);
 }
-CONSOLE_COMMAND_DEF(subghz_send, "subghz_send");
+CONSOLE_COMMAND_DEF(subghz_send, "subghz_send", CONSOLE_STR_ARG_DEF(payload,"payload"));
 static void subghz_send_command_handler(const subghz_send_args_t* args)
 {
-	sx126x_write_buffer(sx126x_dev,0x00,"bebra",5);
+
+	sx126x_write_buffer(sx126x_dev,0x00,args->payload,strlen(args->payload));
+	sx126x_dev->pkt_params.header_type = SX126X_LORA_PKT_EXPLICIT;
+	sx126x_dev->pkt_params.crc_is_on = true;
+	sx126x_dev->pkt_params.invert_iq_is_on = false;
+	sx126x_dev->pkt_params.pld_len_in_bytes = strlen(args->payload);
+	sx126x_dev->pkt_params.preamble_len_in_symb = 8;
+	sx126x_set_lora_pkt_params(sx126x_dev,&sx126x_dev->pkt_params);
+	sx126x_dev->params->set_rf_mode(sx126x_dev,SX126X_RF_MODE_TX_HPA);
+	sx126x_set_tx(sx126x_dev, 0);
 }
 CONSOLE_COMMAND_DEF(subghz_freq, "subghz_freq");
 static void subghz_freq_command_handler(const subghz_freq_args_t* args)
@@ -60,9 +78,9 @@ __attribute((noreturn)) int main(void)
 {
 	SystemCoreClockUpdate();
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	GPIOB->MODER &= ~(GPIO_MODER_MODE5 | GPIO_MODER_MODE4);
-	GPIOB->MODER |= GPIO_MODER_MODE5_0 | GPIO_MODER_MODE4_0;
-	GPIOB->BSRR = GPIO_BSRR_BR5;
+	GPIOB->MODER &= ~(GPIO_MODER_MODE5_1 | GPIO_MODER_MODE4_1);
+	GPIOB->MODER |= (GPIO_MODER_MODE4_0);
+	GPIOB->BSRR = GPIO_BSRR_BS4;
 	usart_config_t config =
 	{
 	  USART2,
