@@ -1,13 +1,23 @@
-Pet-project of the IoT node on the LoRa Labkit RAK3172 (STM32WLE5CC). SibSAU. 
+This is a pet-project IoT LoRa Labkit for SibSAU. 
 Based on LwIP 6LoWPAN + LoRa PHY.
-Base station should be connected through PPPoS (?) to a PC.
+Base station should be connected through PPPoS to a PC.
+
+Main goals of this project:
+- Learn basics of Makefiles. Create usable project structure with MakeFiles.
+- Take a closer look at LwIP network stack. Try to create some network interface drivers.
+- Create a adaptation layer LoRa <==> IEEE 802.15.4.
+- Get some fun to working with this :)
 
 Here is a to-do list:
-- [x] FreeRTOS based minimal project with make script and CMSIS. NO STM32CUBEMX HAL.
-- [ ] USART Communication for PPPoS. Transmitting should be impremented with DMA. Receiving - ring buffer (?)
-- [ ] Create pppos netif. Connect a PC with the node (pppd in linux, windows idk :( ) PING SHOULD BE PASSED
-- [ ] LoRa driver. 
-- [ ] Create 6LoWPAN Adaptation layer. First step is the passing ping.
-- [ ] Create the bridge between netifs.
+- [x] FreeRTOS based minimal project with make script and CMSIS. 
+- [x] USART driver
+- [x] Porting LwIP 
+- [x] Create pppos netif
+- [ ] LoRa driver
+- [ ] LoRa <==> IEEE 802.15.4 layer
+- [ ] Ping from one wireless node to another
+---------------------------------
+- [ ] CoAP
+      
 
  
