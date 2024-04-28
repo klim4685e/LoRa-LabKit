@@ -12,12 +12,11 @@
 #include "sx126x_driver.h"
 #include "usart.h"
 
-sx126x_hal_status_t sx126x_hal_init(const void* context);
+
 void sx126x_rf_switch_init(sx126x_t* dev);
 void sx126x_rf_switch_set(sx126x_t* dev, sx126x_rf_mode_t rf_mode);
 
-sx126x_t SX126X_DEV;
-sx126x_t* sx126x_dev = &SX126X_DEV;
+sx126x_hal_status_t sx126x_hal_init(const void* context);
 
 sx126x_params_t spi_params =
 {
@@ -31,7 +30,6 @@ void subghzspi_debug_setup(void)
 	GPIOA->MODER &= ~(GPIO_MODER_MODE4_0 | GPIO_MODER_MODE5_0 | GPIO_MODER_MODE6_0 | GPIO_MODER_MODE7_0);
 
 	GPIOA->AFR[0] |= ((13 << GPIO_AFRL_AFSEL4_Pos) | (13 << GPIO_AFRL_AFSEL5_Pos) | (13 << GPIO_AFRL_AFSEL6_Pos) | (13 << GPIO_AFRL_AFSEL7_Pos));
-	sx126x_hal_init(sx126x_dev);
 
 }
 void subghzspi_init(void)
@@ -49,7 +47,7 @@ sx126x_hal_status_t sx126x_hal_init(const void* context)
 	subghzspi_init();
 	sx126x_hal_wakeup(dev);
 	sx126x_hal_reset(dev);
-	sx126x_rf_switch_init(sx126x_dev);
+	sx126x_rf_switch_init(dev);
 }
 static uint8_t sx126x_radio_wait_until_ready(sx126x_t *dev)
 {

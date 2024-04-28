@@ -12,6 +12,8 @@
 #include "stm32wlxx.h"
 #include <stdint.h>
 #include "sx126x.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 typedef struct sx126x sx126x_t;
 
@@ -33,7 +35,7 @@ typedef enum {
 typedef struct {
     SPI_TypeDef* spi;
     sx126x_reg_mod_t regulator;
-
+    TaskHandle_t event_handler;
     void(*set_rf_mode)(sx126x_t *dev, sx126x_rf_mode_t rf_mode);
 
 } sx126x_params_t;
@@ -65,6 +67,10 @@ typedef struct sx126x
     uint16_t pan_id;
 }sx126x_t;
 
-
+void sx126x_driver_init(void);
+uint32_t sx126x_driver_random(void);
+void sx126x_driver_send(uint8_t* data, uint8_t len);
+void sx126x_driver_set_rx(void);
+uint8_t sx126x_driver_receive(uint8_t* data, uint8_t max_len);
 
 #endif /* SRC_SX126X_DRIVER_SX126X_DRIVER_H_ */

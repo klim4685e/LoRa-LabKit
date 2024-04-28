@@ -41,6 +41,8 @@ C_INCLUDES =  \
 -I$(ROOT)/src/usart \
 -I$(ROOT)/src/sx126x_driver \
 -I$(ROOT)/src/console/include \
+-I$(ROOT)/src/lwip/src/include \
+-I$(ROOT)/src/lwip/contrib/ports/freertos/include \
 -I$(CURDIR)
 ASM_INCLUDES = 
 C_SOURCE_DIRS = \
@@ -50,6 +52,13 @@ $(ROOT)/src/FreeRTOS\
 $(ROOT)/src/usart \
 $(ROOT)/src/console/src \
 $(ROOT)/src/sx126x_driver \
+$(ROOT)/src/lwip/src/api \
+$(ROOT)/src/lwip/src/core \
+$(ROOT)/src/lwip/src/core/ipv6\
+$(ROOT)/src/lwip/src/netif \
+$(ROOT)/src/lwip/src/netif/ppp \
+$(ROOT)/src/lwip/src/netif/ppp/polarssl \
+$(ROOT)/src/lwip/contrib/ports/freertos \
 $(CURDIR)
 ASM_SOURCE_DIRS = \
 $(ROOT)/src/startup 
